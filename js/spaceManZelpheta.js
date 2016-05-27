@@ -2,12 +2,13 @@
 // Stuff form creating a screen slash canvas.
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
-canvas.width = document.body.clientWidth; 
-canvas.height = document.body.clientHeight;
+//canvas.width = document.body.clientWidth; 
+//canvas.height = document.body.clientHeight;
 var halfCanvasWidth = (canvas.width/2);
 var halfCanvasHeight = (canvas.height/2);  
 var horizon = canvas.height * (4 / 5);
 var spriteSheet = document.getElementById("spriteSheet");
+var backTheGround = document.getElementById("backTheGround");
 
 var rAF
 // PLAYER 1 KEYS
@@ -96,6 +97,7 @@ function onKeyUp(event) {
 function background() {
     this.display = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.drawImage(backTheGround , 0, 0, 1000, 1000, 0, 0, canvas.width, canvas.height);
     }
 };
 
@@ -734,8 +736,10 @@ var allSpritesList = cloud.bigBang([
                                     ]);
 
 //screenReSize(allSpritesList, missileList, playerOne);
-                
-gameClock.beginTimer();
 
-window.requestAnimationFrame(Mainloop);
+$("Art").ready(function(){			 
+	gameClock.beginTimer();
+
+	window.requestAnimationFrame(Mainloop);
+});
 
