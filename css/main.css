@@ -2,10 +2,13 @@
     padding: 0;
     margin: 0;
 }
+html, body {
+	background-color: #b3d9ff;
+}
 canvas {
-    background: #b3d9ff;
     display: block;
-    margin: 0 auto;
+    margin: 60 auto 10 auto;
+	cursor: pointer;
 }
 #Art {
     display: none;

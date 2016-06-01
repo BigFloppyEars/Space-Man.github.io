@@ -316,11 +316,11 @@ Char.prototype.toss = function(t_stamp, m_array) {
         this.toss_stamp = t_stamp;
         if (this.d_LEFT) {
             ball = new Sprite(this.x - 25, this.y, 25, 25, "ball");
-            ball.velocity_x = -8 + this.velocity_x;
+            ball.velocity_x = -10;
         }
         else if (this.d_RIGHT) {
             ball = new Sprite(this.x + this.width, this.y, 25, 25, "ball");
-            ball.velocity_x = 8 + this.velocity_x;
+            ball.velocity_x = 10;
         }
         ball.stamp = this.toss_stamp;
         m_array.push(ball);
@@ -574,16 +574,17 @@ function collideCloud() {
             }
             else {
                 plats[k].update();
-                plats[k].display("red");
+                plats[k].display("black");
             }
         }
         for (var p = 0; p < missiles.length; p++) {
             missiles[p].update();
-            missiles[p].display("black");
+            missiles[p].display("red");
         }
-        playa.update(curr);
-        playa.display();
-        console.log(jerkl);
+		if (playa.length > 0) {
+			playa[0].update(curr);
+			playa[0].display();
+		}
     }
     this.bigBang = function(matter) {
         var cntr = 0;
@@ -708,7 +709,7 @@ function Mainloop() {
     cloud.stateActivate(playerOne);
     cloud.levelPush(allSpritesList, playerOne);
     cloud.missileControl(allSpritesList, missileList, current);
-    cloud.worldStrings(allSpritesList, missileList, playerOne, current)
+    cloud.worldStrings(allSpritesList, missileList, playerOne_Group, current)
     
     rAF = window.requestAnimationFrame(Mainloop);
 };
