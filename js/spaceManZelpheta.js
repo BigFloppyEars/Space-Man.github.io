@@ -19,6 +19,7 @@ var keyD = false;
 var keyL = false;
 var keyT = false;
 var keySPACE = false;
+var running = true;
 
 // Event listener
 window.addEventListener("keydown", onKeyDown, false);
@@ -225,7 +226,7 @@ Char.prototype.display = function () {
         this.currRightWalk += 1;
     }
     // Left
-    if (!this.lefttWalking || this.currLeftWalk < 1) {
+    if (!this.leftWalking || this.currLeftWalk < 1) {
         this.currLeftWalk = this.numWalkImages;
     }
     else {
@@ -662,60 +663,68 @@ function screenReSize(all, misses, hero) {
 }
 
 function Mainloop() {
-    if (playerOne.health < 0.5) {
-        cloud.doKill(playerOne_Group, playerOne);
-    }
-    current = gameClock.secondsElapsed();
-    // Key Events and Log
-    // Player 1
-    if (keyD && !playerOne.onLadder) {
-        playerOne.velocity_x = vx;
-    }
-    if (keyA && !playerOne.onLadder) {
-        playerOne.velocity_x = vx * -1;
-    }
-    if (keyW && playerOne.nearLadder) {
-        playerOne.climb(-1);
-    }
-    else {
-        keyW = false;
-    }
-    if (keyS && playerOne.nearLadder) {
-        playerOne.climb(1);
-    }
-    else {
-        keyS = false;
-    }
-    if (keyT) {
-        playerOne.toss(current, missileList);
-    }
-    else {
-        playerOne.tossing = false;
-    }
-    if (!keyA&& !keyD) {
-        playerOne.velocity_x = 0;
-    }
-    if (!keyW && !keyS && !playerOne.jumping) {
-        playerOne.velocity_y = 0;
-    }
-    if (keyL) {
-        console.log(cloud.tangled.length, playerOne.nearLadder, playerOne.onGround, playerOne.onPlatform, playerOne.x);
-        if (cloud.tangled.length > 0) {
-            console.log(cloud.tangled[0].id);
-        }
-    }
-    if (keySPACE) {
-        playerOne.jump(current);
-    }
-    foreground.display();
-    statsDisplay();
-    cloud.rectDetect(allSpritesList, playerOne, current);
-    cloud.stateActivate(playerOne);
-    cloud.levelPush(allSpritesList, playerOne);
-    cloud.missileControl(allSpritesList, missileList, current);
-    cloud.worldStrings(allSpritesList, missileList, playerOne_Group, current);
+	if (running) {
+		if (playerOne.health < 0.5) {
+			cloud.doKill(playerOne_Group, playerOne);
+			keyT = false;
+			running = false;
+		}
+		current = gameClock.secondsElapsed();
+		// Key Events and Log
+		// Player 1
+		if (keyD && !playerOne.onLadder) {
+			playerOne.velocity_x = vx;
+		}
+		if (keyA && !playerOne.onLadder) {
+			playerOne.velocity_x = vx * -1;
+		}
+		if (keyW && playerOne.nearLadder) {
+			playerOne.climb(-1);
+		}
+		else {
+			keyW = false;
+		}
+		if (keyS && playerOne.nearLadder) {
+			playerOne.climb(1);
+		}
+		else {
+			keyS = false;
+		}
+		if (keyT) {
+			playerOne.toss(current, missileList);
+		}
+		else {
+			playerOne.tossing = false;
+		}
+		if (!keyA&& !keyD) {
+			playerOne.velocity_x = 0;
+		}
+		if (!keyW && !keyS && !playerOne.jumping) {
+			playerOne.velocity_y = 0;
+		}
+		if (keyL) {
+			console.log(cloud.tangled.length, playerOne.nearLadder, playerOne.onGround, playerOne.onPlatform, playerOne.x);
+			if (cloud.tangled.length > 0) {
+				console.log(cloud.tangled[0].id);
+			}
+		}
+		if (keySPACE) {
+			playerOne.jump(current);
+		}
+		foreground.display();
+		statsDisplay();
+		cloud.rectDetect(allSpritesList, playerOne, current);
+		cloud.stateActivate(playerOne);
+		cloud.levelPush(allSpritesList, playerOne);
+		cloud.missileControl(allSpritesList, missileList, current);
+		cloud.worldStrings(allSpritesList, missileList, playerOne_Group, current);
     
-    rAF = window.requestAnimationFrame(Mainloop);
+		rAF = window.requestAnimationFrame(Mainloop);
+	}
+	else {
+		alert("Game Over, Refresh to Restart.");
+		return;
+	}
 }
 
 var allSpritesList = cloud.bigBang([
@@ -733,7 +742,7 @@ var allSpritesList = cloud.bigBang([
                             [3900 , horizon, 200, 50, "platform2"],
                             [800 , 2300, 200, 50, "platform2"],
                             [1300 , 2300, 200, 50, "platform2"],
-                            [400, 800, 50, 1700, "ladder"],
+                            [400, horizon, 50, 2100, "ladder"],
                             [2300, 1800, 50, horizon + 300, "ladder"],
                             [1300, 500, 50, horizon + 400, "ladder"],
                             [1700, 2500 - 100, 100, 100, "Jerk"],
