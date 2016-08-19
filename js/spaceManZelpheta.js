@@ -1,7 +1,7 @@
-
 // Stuff form creating a screen slash canvas.
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
+if (document.body.clientHeight < canvas.height) {canvas.height = document.body.clientHeight;}
 //canvas.width = document.body.clientWidth; 
 //canvas.height = document.body.clientHeight;
 var halfCanvasWidth = (canvas.width/2);
@@ -10,7 +10,7 @@ var horizon = canvas.height * (4 / 5);
 var spriteSheet = document.getElementById("spriteSheet");
 var backTheGround = document.getElementById("backTheGround");
 
-var rAF
+var rAF;
 // PLAYER 1 KEYS
 var keyW = false;
 var keyA = false;
@@ -97,9 +97,10 @@ function onKeyUp(event) {
 function background() {
     this.display = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.drawImage(backTheGround , 0, 0, 1000, 1000, 0, 0, canvas.width, canvas.height);
-    }
-};
+		ctx.fillStyle = "lightblue";
+		ctx.fillRect(0, 0, canvas.width, canvas.width);
+    };
+}
 
 // Basic Sprite & Platform constructor
 function Sprite(x, y, width, height, id) {
@@ -111,7 +112,7 @@ function Sprite(x, y, width, height, id) {
     this.velocity_x = 0;
     this.velocity_y = 0;
     this.stamp = 0;
-};
+}
 Sprite.prototype.update = function() {
     this.x += this.velocity_x;
     this.y += this.velocity_y;
@@ -129,7 +130,7 @@ function badGuy(x, y, width, height, id) {
     this.d_RIGHT = false;
     this.health = 5;
     this.healthBar = new Sprite(this.x, this.y - 20, this.health * 20, 20);
-};
+}
 
 badGuy.prototype = Object.create(Sprite.prototype);
 badGuy.prototype.constructor = badGuy;
@@ -217,14 +218,14 @@ Char.prototype.display = function () {
     }
     // Sprite Walking Rules
     // Right
-    if (this.rightWalking == false || this.currRightWalk > this.numWalkImages) {
+    if (!this.rightWalking || this.currRightWalk > this.numWalkImages) {
         this.currRightWalk = 0;
     }
     else {
         this.currRightWalk += 1;
     }
     // Left
-    if (this.lefttWalking == false || this.currLeftWalk < 1) {
+    if (!this.lefttWalking || this.currLeftWalk < 1) {
         this.currLeftWalk = this.numWalkImages;
     }
     else {
@@ -242,7 +243,7 @@ Char.prototype.update = function(curr) {
     this.healthBar.x = this.x;
     this.healthBar.y = this.y -20 + this.velocity_y;
     if (this.stamp + 0.1 < this.playtime) {
-        self.jumping = false;
+        this.jumping = false;
     }
     // Gravity
     if (!this.onGround && !this.onPlatform && !this.onLadder) {
@@ -258,7 +259,7 @@ Char.prototype.update = function(curr) {
     // Orientation
     if (this.velocity_x > 0) {
         this.rightWalking = true;
-        this.leftWalking = false
+        this.leftWalking = false;
         this.d_RIGHT = true;
         this.d_LEFT = false;
     }
@@ -278,7 +279,7 @@ Char.prototype.update = function(curr) {
         this.onLadder = false;
     }
     if (this.onLadder) {
-        this.velocity_x = 0
+        this.velocity_x = 0;
         this.leftWalking = false;
         this.rightWalking = false;
     }
@@ -335,14 +336,14 @@ function Clock() {
     this.current;
 this.beginTimer = function() {
         this.start = Date.now();
-    }
+    };
 this.secondsElapsed = function() {
         this.last = this.current;
         this.end = Date.now();
         this.current = ((this.end - this.start)/1000);
         this.fps = 1/(this.current - this.last);
         return this.current;
-    }
+    };
 }
 
 function collideCloud() {
@@ -380,7 +381,7 @@ function collideCloud() {
                 }
             }
         }
-    }
+    };
     this.stateActivate = function(hero, curr) {
         var ladLen = 0;
         var platLen = 0;
@@ -431,7 +432,7 @@ function collideCloud() {
                 hero.onPlatform = false;
             }
             if (this.tangled[j].id.slice(0, 9) === "platform2") {
-                if (hero.onLadder == false && hero.velocity_y > -1) {
+                if (!hero.onLadder && hero.velocity_y > -1) {
                     platLen += 1;
                     hero.onGround = true;
                     hero.onPlatform = true;
@@ -478,7 +479,7 @@ function collideCloud() {
                 }
             }
         }
-    }
+    };
     this.levelPush = function(plats, hero) {
         var change;
         var changeY;
@@ -516,7 +517,7 @@ function collideCloud() {
                 plats[x].y += changeY;
             }
         }
-    }
+    };
     this.doKill = function(spriteList, sprite) {
         if (spriteList.indexOf(sprite) > -1) {
             spriteList.splice(spriteList.indexOf(sprite), 1);
@@ -524,7 +525,7 @@ function collideCloud() {
         if (this.tangled.indexOf(sprite) > -1) {
             this.tangled.splice(this.tangled.indexOf(sprite), 1);
         }
-    }
+    };
     this.missileControl = function(jerks, missList, curr) {
         for (var h = 0; h < missList.length; h++) {
             for (var v = 0; v < jerks.length; v++) {
@@ -532,7 +533,7 @@ function collideCloud() {
                     if (missList[h].velocity_x >= 0) {
                         if (missList[h].x + missList[h].width + missList[h].velocity_x >= jerks[v].x && missList[h].x + missList[h].width + missList[h].velocity_x <= jerks[v].x + jerks[v].width && missList[h].y <= jerks[v].y + jerks[v].height && missList[h].y >= jerks[v].y) {
                             jerks[v].health -= 1;
-                            this.doKill(missList, missList[h])
+                            this.doKill(missList, missList[h]);
                             if (jerks[v].health < 1) {
                                 this.doKill(jerks, jerks[v]);
                                 return;
@@ -543,7 +544,7 @@ function collideCloud() {
                     else if (missList[h].velocity_x <= 0) {
                         if (missList[h].x + missList[h].velocity_x >= jerks[v].x && missList[h].x + missList[h].velocity_x <= jerks[v].x + jerks[v].width && missList[h].y <= jerks[v].y + jerks[v].height && missList[h].y >= jerks[v].y) {
                             jerks[v].health -= 1;
-                            this.doKill(missList, missList[h])
+                            this.doKill(missList, missList[h]);
                             if (jerks[v].health < 1) {
                                 this.doKill(jerks, jerks[v]);
                                 return;
@@ -554,7 +555,7 @@ function collideCloud() {
                 }
                 if (jerks[v].id === "platform1") {
                     if (missList[h].y + missList[h].height > jerks[v].y) {
-                        this.doKill(missList, missList[h])
+                        this.doKill(missList, missList[h]);
                         return;
                     }
                 }
@@ -563,7 +564,7 @@ function collideCloud() {
                 missList[h].velocity_y += 0.5;
             }
         }
-    }
+    };
     this.worldStrings = function(plats, missiles, playa, curr) {
         var jerkl = 0;
         for (var k = 0; k < plats.length; k++) {
@@ -572,6 +573,10 @@ function collideCloud() {
                 plats[k].update();
                 plats[k].display("purple");
             }
+            else if (plats[k].id === "platform1") {
+				plats[k].update();
+                plats[k].display("green");
+			}
             else {
                 plats[k].update();
                 plats[k].display("black");
@@ -585,7 +590,7 @@ function collideCloud() {
 			playa[0].update(curr);
 			playa[0].display();
 		}
-    }
+};
     this.bigBang = function(matter) {
         var cntr = 0;
         var space = [];
@@ -600,8 +605,8 @@ function collideCloud() {
             }
         }
         return space;
-    }
-};
+    };
+}
 
 
 var vx = 5;
@@ -614,7 +619,6 @@ var foreground = new background();
 
 var playerOne = new Char(halfCanvasWidth - (halfCanvasWidth * (1/6)), horizon - 100, 100, 100, "Player");
 var playerOne_Group = [playerOne];
-
 
 var missileList = [];
 
@@ -659,48 +663,48 @@ function screenReSize(all, misses, hero) {
 
 function Mainloop() {
     if (playerOne.health < 0.5) {
-        cloud.doKill(playerOne_Group, playerOne)
+        cloud.doKill(playerOne_Group, playerOne);
     }
     current = gameClock.secondsElapsed();
     // Key Events and Log
     // Player 1
-    if (keyD == true && !playerOne.onLadder) {
+    if (keyD && !playerOne.onLadder) {
         playerOne.velocity_x = vx;
     }
-    if (keyA == true && !playerOne.onLadder) {
+    if (keyA && !playerOne.onLadder) {
         playerOne.velocity_x = vx * -1;
     }
-    if (keyW == true && playerOne.nearLadder) {
+    if (keyW && playerOne.nearLadder) {
         playerOne.climb(-1);
     }
     else {
         keyW = false;
     }
-    if (keyS == true && playerOne.nearLadder) {
+    if (keyS && playerOne.nearLadder) {
         playerOne.climb(1);
     }
     else {
         keyS = false;
     }
-    if (keyT == true) {
+    if (keyT) {
         playerOne.toss(current, missileList);
     }
     else {
         playerOne.tossing = false;
     }
-    if (keyA == false && keyD == false) {
+    if (!keyA&& !keyD) {
         playerOne.velocity_x = 0;
     }
-    if (keyW == false && keyS == false && !playerOne.jumping) {
+    if (!keyW && !keyS && !playerOne.jumping) {
         playerOne.velocity_y = 0;
     }
-    if (keyL == true) {
+    if (keyL) {
         console.log(cloud.tangled.length, playerOne.nearLadder, playerOne.onGround, playerOne.onPlatform, playerOne.x);
         if (cloud.tangled.length > 0) {
             console.log(cloud.tangled[0].id);
         }
     }
-    if (keySPACE == true) {
+    if (keySPACE) {
         playerOne.jump(current);
     }
     foreground.display();
@@ -709,10 +713,10 @@ function Mainloop() {
     cloud.stateActivate(playerOne);
     cloud.levelPush(allSpritesList, playerOne);
     cloud.missileControl(allSpritesList, missileList, current);
-    cloud.worldStrings(allSpritesList, missileList, playerOne_Group, current)
+    cloud.worldStrings(allSpritesList, missileList, playerOne_Group, current);
     
     rAF = window.requestAnimationFrame(Mainloop);
-};
+}
 
 var allSpritesList = cloud.bigBang([
                             [4000, 0, 100, 2500, "portal"],
@@ -743,4 +747,3 @@ $("Art").ready(function(){
 
 	window.requestAnimationFrame(Mainloop);
 });
-
