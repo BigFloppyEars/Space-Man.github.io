@@ -7,7 +7,7 @@ html, body {
 }
 canvas {
     display: block;
-    margin: 60 auto 10 auto;
+    margin: auto;
 	cursor: pointer;
 }
 #Art {
