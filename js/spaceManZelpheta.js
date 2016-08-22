@@ -1,9 +1,23 @@
-// Stuff form creating a screen slash canvas.
+"use strict";
+
+requirejs.config({
+    //By default load any module IDs from js/lib
+    baseUrl: 'js/lib'
+});
+
+requirejs(["sprite", "enemy", "player"],	function(Sprite, badGuy, Char){
+	
+	window.requestAnimFrame = (function(callback) {
+		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+			function(callback) {
+				window.setTimeout(callback, 1000 / 60);
+			};
+	})();
+
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
-if (document.body.clientHeight < canvas.height) {canvas.height = document.body.clientHeight;}
-//canvas.width = document.body.clientWidth; 
-//canvas.height = document.body.clientHeight;
+if (document.body.clientWidth < canvas.width){canvas.width = document.body.clientWidth;}
+if (document.body.clientHeight < canvas.height){canvas.height = document.body.clientHeight;}
 var halfCanvasWidth = (canvas.width/2);
 var halfCanvasHeight = (canvas.height/2);  
 var horizon = canvas.height * (4 / 5);
@@ -102,232 +116,6 @@ function background() {
 		ctx.fillRect(0, 0, canvas.width, canvas.width);
     };
 }
-
-// Basic Sprite & Platform constructor
-function Sprite(x, y, width, height, id) {
-    this.id = id;
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.velocity_x = 0;
-    this.velocity_y = 0;
-    this.stamp = 0;
-}
-Sprite.prototype.update = function() {
-    this.x += this.velocity_x;
-    this.y += this.velocity_y;
-};
-Sprite.prototype.display = function(color) {
-        ctx.fillStyle = color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-};
-
-// Enemy Constructor
-function badGuy(x, y, width, height, id) {
-    Sprite.call(this, x, y, width, height, id);
-    this.patrol = 0;
-    this.d_LEFT = true;
-    this.d_RIGHT = false;
-    this.health = 5;
-    this.healthBar = new Sprite(this.x, this.y - 20, this.health * 20, 20);
-}
-
-badGuy.prototype = Object.create(Sprite.prototype);
-badGuy.prototype.constructor = badGuy;
-
-badGuy.prototype.update = function () {
-    this.patrol += this.velocity_x;
-    if (this.patrol > 300) {
-        this.d_LEFT = true;
-        this.d_RIGHT = false;
-    }
-    else if (this.patrol < -300) {
-        this.d_LEFT = false;
-        this.d_RIGHT = true;
-    }
-    if (this.d_LEFT) {
-        this.velocity_x = -4;
-    }
-    else if (this.d_RIGHT) {
-        this.velocity_x = 4;
-    }
-    this.y += this.velocity_y;
-    this.x += this.velocity_x;
-    this.healthBar.display("white");
-    this.healthBar.width = this.health * 20;
-    this.healthBar.x = this.x + this.velocity_x;
-    //this.healthBar.x += this.velocity_x;
-    this.healthBar.y = this.y -20;
-    };
-badGuy.prototype.display = function(color) {
-        ctx.fillStyle = color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-};
-
-// Character constructor
-function Char(x, y, width, height, id) {
-    Sprite.call(this, x, y, width, height, id);
-    this.playtime = 0;
-    this.toss_stamp = 0;
-    // Orientation Variables
-    this.outOfBounds = false;
-    this.d_RIGHT = true;
-    this.d_LEFT = false;
-    this.rightWalking = false;
-    this.leftWalking = false;
-    this.onGround = false;
-    this.jumping = false;
-    this.nearLadder = false;
-    this.onLadder = false;
-    this.onPlatform = false;
-    // Attack / Interactions
-    this.tossing = false;
-    // Health
-    this.health = 100;
-    this.healthBar = new Sprite(this.x, this.y - 20, this.health * 20, 10);
-    // Sprite Animation Variables
-    this.numWalkImages = 14;
-    this.currRightWalk = 0;
-    this.currLeftWalk = 14;
-}
-
-Char.prototype = Object.create(Sprite.prototype);
-Char.prototype.constructor = Char;
-    
-    // Render or draw character
-Char.prototype.display = function () {
-    if (this.d_RIGHT && this.jumping) {
-        ctx.drawImage(spriteSheet , 0, 200, this.width, this.height, this.x, this.y +2, this.width, this.height);
-    }
-    else if (this.d_LEFT && this.jumping) {
-        ctx.drawImage(spriteSheet , 200, 300, this.width, this.height, this.x, this.y +2, this.width, this.height);
-    }
-    else if (this.rightWalking) {
-        ctx.drawImage(spriteSheet , (this.currRightWalk)*100, 400, this.width, this.height, this.x, this.y +2, this.width, this.height);
-    }
-    else if (this.leftWalking) {
-        ctx.drawImage(spriteSheet , (this.currLeftWalk)*100, 500, this.width, this.height, this.x, this.y +2, this.width, this.height);
-    }
-    else {
-        if (this.d_RIGHT) {
-            ctx.drawImage(spriteSheet , 0, 0, this.width, this.height, this.x, this.y +2, this.width, this.height);
-        }
-        else if (this.d_LEFT) {
-            ctx.drawImage(spriteSheet , 0, 100, this.width, this.height, this.x, this.y +2, this.width, this.height);
-        }
-    }
-    // Sprite Walking Rules
-    // Right
-    if (!this.rightWalking || this.currRightWalk > this.numWalkImages) {
-        this.currRightWalk = 0;
-    }
-    else {
-        this.currRightWalk += 1;
-    }
-    // Left
-    if (!this.leftWalking || this.currLeftWalk < 1) {
-        this.currLeftWalk = this.numWalkImages;
-    }
-    else {
-        this.currLeftWalk -= 1;
-    }
-};
-    
-Char.prototype.update = function(curr) {
-    this.playtime = curr;
-    if (this.health < 0) {
-        this.health = 0;
-    }
-    this.healthBar.display("white");
-    this.healthBar.width = this.health * 1;
-    this.healthBar.x = this.x;
-    this.healthBar.y = this.y -20 + this.velocity_y;
-    if (this.stamp + 0.1 < this.playtime) {
-        this.jumping = false;
-    }
-    // Gravity
-    if (!this.onGround && !this.onPlatform && !this.onLadder) {
-        this.jumping = true;
-    }
-    if (this.jumping && !this.onLadder && this.velocity_y < 10) {
-        this.velocity_y += 1;
-    }
-    // Borders
-    if (this.y - this.velocity_y < 0) {
-        this.y = 0;
-    }
-    // Orientation
-    if (this.velocity_x > 0) {
-        this.rightWalking = true;
-        this.leftWalking = false;
-        this.d_RIGHT = true;
-        this.d_LEFT = false;
-    }
-    if (this.velocity_x < 0) {
-        this.rightWalking = false;
-        this.leftWalking = true;
-        this.d_RIGHT = false;
-        this.d_LEFT = true;
-    }
-    if (this.velocity_x <= 0){
-        this.rightWalking = false;
-    }
-    if (this.velocity_x >= 0){
-        this.leftWalking = false;
-    }
-    if (!keyS && !keyW && this.onGround || keySPACE) {
-        this.onLadder = false;
-    }
-    if (this.onLadder) {
-        this.velocity_x = 0;
-        this.leftWalking = false;
-        this.rightWalking = false;
-    }
-    if (this.outOfBounds) {
-        this.velocity_x = 0;
-    }
-    // Health Bar Update
-    this.x += this.velocity_x;
-    this.y += this.velocity_y;
-};
-Char.prototype.jump = function(stamp) {
-    if (this.onLadder && !this.onPlatform && !this.onGround) {
-        this.onLadder = false;
-        this.velocity_y = 0;
-        this.jumping = true;
-    }
-    else if (this.onGround && !this.jumping) {
-        this.stamp = stamp;
-        this.jumping = true;
-        this.velocity_y -= 20;
-    }
-};
-Char.prototype.climb = function(m) {
-    if (this.nearLadder) {
-        this.onLadder = true;
-    }
-    if (this.onLadder) {
-        this.velocity_y = (vy * m);
-    }
-};
-Char.prototype.toss = function(t_stamp, m_array) {
-    var ball;
-    if (!this.onLadder && !this.tossing && this.toss_stamp + 0.25 < this.playtime) {
-    this.tossing = true;
-        this.toss_stamp = t_stamp;
-        if (this.d_LEFT) {
-            ball = new Sprite(this.x - 25, this.y, 25, 25, "ball");
-            ball.velocity_x = -10;
-        }
-        else if (this.d_RIGHT) {
-            ball = new Sprite(this.x + this.width, this.y, 25, 25, "ball");
-            ball.velocity_x = 10;
-        }
-        ball.stamp = this.toss_stamp;
-        m_array.push(ball);
-    }
-};
 
 function Clock() {
     this.start;
@@ -571,25 +359,25 @@ function collideCloud() {
         for (var k = 0; k < plats.length; k++) {
             if (plats[k].id === "Jerk") {
                 jerkl += 1;
-                plats[k].update();
-                plats[k].display("purple");
+                plats[k].update(ctx);
+                plats[k].display("purple", ctx);
             }
             else if (plats[k].id === "platform1") {
 				plats[k].update();
-                plats[k].display("green");
+                plats[k].display("green", ctx);
 			}
             else {
                 plats[k].update();
-                plats[k].display("black");
+                plats[k].display("black", ctx);
             }
         }
         for (var p = 0; p < missiles.length; p++) {
             missiles[p].update();
-            missiles[p].display("red");
+            missiles[p].display("red", ctx);
         }
 		if (playa.length > 0) {
-			playa[0].update(curr);
-			playa[0].display();
+			playa[0].update(curr, vx , vy, ctx, keyS, keyW, keySPACE);
+			playa[0].display(ctx);
 		}
 };
     this.bigBang = function(matter) {
@@ -622,45 +410,6 @@ var playerOne = new Char(halfCanvasWidth - (halfCanvasWidth * (1/6)), horizon - 
 var playerOne_Group = [playerOne];
 
 var missileList = [];
-
-function statsDisplay() {
-    ctx.font="20px Arial";
-    ctx.fillText(playerOne.id, playerOne.x, playerOne.y - 20);
-    var i = gameClock.fps.toString();
-    ctx.fillText(i, canvas.width/2 + 300, 50);
-}
-
-function screenReSize(all, misses, hero) {
-    for (var c = 0; c < all.length; c++) {
-        if (all[c].id !== "platform1") {
-            all[c].x = all[c].x * (1/8);
-            all[c].width = all[c].width * (1/8);
-            all[c].velocity_x = all[c].velocity_x * (1/8);
-            all[c].y = all[c].y * (1/8);
-            all[c].height = all[c].height * (1/8);
-            all[c].velocity_y = all[c].velocity_y * (1/8);
-        }
-        else {
-            all[c].width = all[c].width * (1/2);
-            all[c].height = all[c].height * (1/8);
-            all[c].y = all[c].y * (1/8);
-        }
-    }
-    for (var a = 0; a < misses.length; a++) {
-        misses[a].x = misses[a].x * (1/8);
-        misses[a].width = misses[a].width * (1/8);
-        misses[a].velocity_x = misses[a].velocity_x * (1/8);
-        misses[a].y = misses[a].y * (1/8);
-        misses[a].height = misses[a].height * (1/8);
-        misses[a].velocity_y = misses[a].velocity_y * (1/8);
-    }
-    hero.x = hero.x * (1/8);
-    hero.width = hero.width * (1/8);
-    hero.velocity_x = hero.velocity_x * (1/8);
-    hero.y = hero.y * (1/8);
-    hero.height = hero.height * (1/8);
-    hero.velocity_y = hero.velocity_y * (1/8);
-}
 
 function Mainloop() {
 	if (running) {
@@ -712,14 +461,13 @@ function Mainloop() {
 			playerOne.jump(current);
 		}
 		foreground.display();
-		statsDisplay();
 		cloud.rectDetect(allSpritesList, playerOne, current);
 		cloud.stateActivate(playerOne);
 		cloud.levelPush(allSpritesList, playerOne);
 		cloud.missileControl(allSpritesList, missileList, current);
 		cloud.worldStrings(allSpritesList, missileList, playerOne_Group, current);
     
-		rAF = window.requestAnimationFrame(Mainloop);
+		rAF = window.requestAnimFrame(function() {Mainloop();});
 	}
 	else {
 		alert("Game Over, Refresh to Restart.");
@@ -742,17 +490,30 @@ var allSpritesList = cloud.bigBang([
                             [3900 , horizon, 200, 50, "platform2"],
                             [800 , 2300, 200, 50, "platform2"],
                             [1300 , 2300, 200, 50, "platform2"],
-                            [400, horizon, 50, 2100, "ladder"],
-                            [2300, 1800, 50, horizon + 300, "ladder"],
+                            [1650 , 1300, 200, 50, "platform2"],
+                            [2100 , 1300, 200, 50, "platform2"],
+                            [2550 , 1300, 200, 50, "platform2"],
+                            [3000 , 1300, 200, 50, "platform2"],
+                            [3450 , 1300, 200, 50, "platform2"],
+                            [3900 , 1300, 200, 50, "platform2"],
+                            [2550 , 2200, 200, 50, "platform2"],
+                            [3000 , 2200, 200, 50, "platform2"],
+                            [3450 , 2300, 200, 50, "platform2"],
+                            [3900 , 2300, 200, 50, "platform2"],
+                            [800 , 2300, 200, 50, "platform2"],
+                            [1300 , 2300, 200, 50, "platform2"],
+                            [2400, horizon, 50, 1500, "ladder"],
+                            [1300, 1800, 50, horizon + 300, "ladder"],
                             [1300, 500, 50, horizon + 400, "ladder"],
                             [1700, 2500 - 100, 100, 100, "Jerk"],
                             [1000, 2500 - 100, 100, 100, "Jerk"]
                                     ]);
 
-//screenReSize(allSpritesList, missileList, playerOne);
 
 $("Art").ready(function(){			 
 	gameClock.beginTimer();
 
-	window.requestAnimationFrame(Mainloop);
+	window.requestAnimFrame(function() {Mainloop();});
+});
+
 });
