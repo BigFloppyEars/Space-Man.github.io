@@ -68,7 +68,7 @@ define("player", ["sprite"], function(Sprite){
 		}
 	};
     
-	Char.prototype.update = function(curr, vx, vy, ctx, keyS, keyW, keySPACE) {
+	Char.prototype.update = function(curr, ctx) {
 		this.playtime = curr;
 		if (this.health < 0) {
 			this.health = 0;
@@ -109,9 +109,6 @@ define("player", ["sprite"], function(Sprite){
 		}
 		if (this.velocity_x >= 0){
 			this.leftWalking = false;
-		}
-		if (!keyS && !keyW && this.onGround || keySPACE) {
-			this.onLadder = false;
 		}
 		if (this.onLadder) {
 			this.velocity_x = 0;
