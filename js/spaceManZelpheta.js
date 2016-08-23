@@ -5,7 +5,7 @@ requirejs.config({
     baseUrl: 'js/lib'
 });
 
-requirejs(["sprite", "enemy", "player", "stateEngine"],	function(Sprite, badGuy, Char, collideCloud){
+requirejs(["sprite", "enemy", "player", "stateEngine", "clock"],	function(Sprite, badGuy, Char, collideCloud, Clock){
 	
 	window.requestAnimFrame = (function(callback) {
 		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
@@ -117,23 +117,8 @@ function background() {
     };
 }
 
-function Clock() {
-    this.start;
-    this.last;
-    this.end;
-    this.fps;
-    this.current;
-this.beginTimer = function() {
-        this.start = Date.now();
-    };
-this.secondsElapsed = function() {
-        this.last = this.current;
-        this.end = Date.now();
-        this.current = ((this.end - this.start)/1000);
-        this.fps = 1/(this.current - this.last);
-        return this.current;
-    };
-}
+
+
 
 var vx = 5;
 var vy = 5;
