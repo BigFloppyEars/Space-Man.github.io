@@ -5,7 +5,9 @@ requirejs.config({
     baseUrl: 'js/lib'
 });
 
-requirejs(["sprite", "enemy", "player", "stateEngine", "clock"],	function(Sprite, badGuy, Char, collideCloud, Clock){
+requirejs(["sprite", "enemy", "player", "stateEngine", "clock"],	
+
+	function(Sprite, badGuy, Char, collideCloud, Clock){
 	
 	window.requestAnimFrame = (function(callback) {
 		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
@@ -24,7 +26,6 @@ var horizon = canvas.height * (4 / 5);
 var spriteSheet = document.getElementById("spriteSheet");
 var backTheGround = document.getElementById("backTheGround");
 
-var rAF;
 // PLAYER 1 KEYS
 var keyW = false;
 var keyA = false;
@@ -33,11 +34,32 @@ var keyD = false;
 var keyL = false;
 var keyT = false;
 var keySPACE = false;
+var mouseClick = false;
+var mouseCords = [0, 0];
 var running = true;
 
 // Event listener
 window.addEventListener("keydown", onKeyDown, false);
 window.addEventListener("keyup", onKeyUp, false);
+window.addEventListener("click", onClick, false);
+
+function onClick(event) {
+	var rect = canvas.getBoundingClientRect();
+	if (!mouseClick){
+		if (event.clientX - rect.left > 0 && event.clientY - rect.top > 0) {
+			if (event.clientX - rect.left < canvas.width && event.clientY - rect.top < canvas.height) {
+				console.log(mouseCords);
+				mouseCords[0] = event.clientX - rect.left;
+				mouseCords[1] = event.clientY - rect.top;
+				mouseClick = true;
+				return;
+			}
+		}
+	}
+	else if (mouseClick){
+		mouseClick = false;
+	}
+}
 
 function onKeyDown(event) {
     var keyCode = event.keyCode;
@@ -117,9 +139,6 @@ function background() {
     };
 }
 
-
-
-
 var vx = 5;
 var vy = 5;
 var current = 0;
@@ -187,12 +206,23 @@ function Mainloop() {
 		}
 		foreground.display();
 		cloud.rectDetect(allSpritesList, playerOne, current);
-		cloud.stateActivate(playerOne);
+		cloud.stateActivate(playerOne, allSpritesList);
 		cloud.levelPush(allSpritesList, playerOne);
 		cloud.missileControl(allSpritesList, missileList, current);
 		cloud.worldStrings(allSpritesList, missileList, playerOne_Group, current, ctx);
+		
+		if (mouseClick) {
+		for (var w = 0; w < allSpritesList.length; w++) {
+			if (mouseCords[0] > allSpritesList[w].x && mouseCords[0] < allSpritesList[w].x + allSpritesList[w].width) {
+				if (mouseCords[1] > allSpritesList[w].y && mouseCords[1] < allSpritesList[w].y + allSpritesList[w].height) {
+					mouseClick = false;
+					console.log(allSpritesList[w].id);
+				}
+			}
+		}
+	}
     
-		rAF = window.requestAnimFrame(function() {Mainloop();});
+		window.requestAnimFrame(function() {Mainloop();});
 	}
 	else {
 		alert("Game Over, Refresh to Restart.");
@@ -201,44 +231,75 @@ function Mainloop() {
 }
 
 var allSpritesList = cloud.bigBang([
-                            [4000, 0, 100, 2500, "portal"],
-                            [0, 0, 100, 2500, "portal"],
-                            [0, 2500, screen.width, screen.height - horizon, "platform1"],
-                            [100, horizon, 400, 50, "platform2"],
-                            [750 , horizon, 200, 50, "platform2"],
-                            [1200 , horizon, 200, 50, "platform2"],
-                            [1650 , horizon, 200, 50, "platform2"],
-                            [2100 , horizon, 200, 50, "platform2"],
-                            [2550 , horizon, 200, 50, "platform2"],
-                            [3000 , horizon, 200, 50, "platform2"],
-                            [3450 , horizon, 200, 50, "platform2"],
-                            [3900 , horizon, 200, 50, "platform2"],
-                            [800 , 2300, 200, 50, "platform2"],
-                            [1300 , 2300, 200, 50, "platform2"],
-                            [1650 , 1300, 200, 50, "platform2"],
-                            [2100 , 1300, 200, 50, "platform2"],
-                            [2550 , 1300, 200, 50, "platform2"],
-                            [3000 , 1300, 200, 50, "platform2"],
-                            [3450 , 1300, 200, 50, "platform2"],
-                            [3900 , 1300, 200, 50, "platform2"],
-                            [2550 , 2200, 200, 50, "platform2"],
-                            [3000 , 2200, 200, 50, "platform2"],
-                            [3450 , 2300, 200, 50, "platform2"],
-                            [3900 , 2300, 200, 50, "platform2"],
-                            [800 , 2300, 200, 50, "platform2"],
-                            [1300 , 2300, 200, 50, "platform2"],
-                            [2400, horizon, 50, 1500, "ladder"],
-                            [1300, 1800, 50, horizon + 300, "ladder"],
-                            [1300, 500, 50, horizon + 400, "ladder"],
-                            [1700, 2500 - 100, 100, 100, "Jerk"],
-                            [1000, 2500 - 100, 100, 100, "Jerk"]
-                                    ]);
+
+	[4000, 0, 100, 2500, "portal"],
+	[0, 0, 100, 2500, "portal"],
+	[0, 2500, screen.width, screen.height - horizon, "platform1"],
+    [100, horizon, 400, 50, "platform2"],
+    [750 , horizon, 200, 50, "platform2"],
+    [1200 , horizon, 200, 50, "platform2"],
+	[1650 , horizon, 200, 50, "platform2"],
+	[2100 , horizon, 200, 50, "platform2"],
+    [2550 , horizon, 200, 50, "platform2"],
+    [3000 , horizon, 200, 50, "platform2"],
+    [3450 , horizon, 200, 50, "platform2"],
+    [3900 , horizon, 200, 50, "platform2"],
+    [800 , 2300, 200, 50, "platform2"],
+    [1300 , 2300, 200, 50, "platform2"],
+    [1650 , 1300, 200, 50, "platform2"],
+    [2100 , 1300, 200, 50, "platform2"],
+    [2550 , 1300, 200, 50, "platform2"],
+    [3000 , 1300, 200, 50, "platform2"],
+    [3450 , 1300, 200, 50, "platform2"],
+    [3900 , 1300, 200, 50, "platform2"],
+    [2550 , 2200, 200, 50, "platform2"],
+    [3000 , 2200, 200, 50, "platform2"],
+    [3450 , 2300, 200, 50, "platform2"],
+    [3900 , 2300, 200, 50, "platform2"],
+    [800 , 2300, 200, 50, "platform2"],
+    [1300 , 2300, 200, 50, "platform2"],
+    [2400, horizon, 50, 1500, "ladder"],
+    [1300, 1800, 50, horizon + 300, "ladder"],
+    [1300, 500, 50, horizon + 400, "ladder"],
+     [1700, 2500 - 100, 100, 100, "Jerk"],
+    [1000, 2500 - 100, 100, 100, "Jerk"]
+]);
+
+function buttons() {
+	this.startBTN = function() {
+		ctx.font = "50px serif";
+		ctx.fillText("Start Game", 300, 300);
+	};
+	this.display = function() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		this.startBTN();
+	}
+}
+
+var theButtons = new buttons();
+
+function startScreen() {
+	
+	theButtons.display();
+	
+	if (mouseClick) {
+		if (mouseCords[0] >= 300 && mouseCords[0] <= 525) {
+			if (mouseCords[1] >= 250 && mouseCords[1] <= 300) {
+				console.log(mouseCords, "game start!");
+				gameClock.beginTimer();
+				return window.requestAnimFrame(function() {Mainloop();});
+			}
+		}
+	}
+	
+	window.requestAnimFrame(function() {startScreen();});
+}
 
 
-$("Art").ready(function(){			 
-	gameClock.beginTimer();
-
-	window.requestAnimFrame(function() {Mainloop();});
+$("Art").ready(function(){
+	
+	window.requestAnimFrame(function() {startScreen();});
+	
 });
 
 });

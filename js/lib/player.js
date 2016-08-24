@@ -31,10 +31,16 @@ define("player", ["sprite"], function(Sprite){
     
 	// Render or draw character
 	Char.prototype.display = function (ctx) {
-		if (this.d_RIGHT && this.jumping) {
+		if (this.d_RIGHT && this.jumping && this.velocity_y < 0) {
+			ctx.drawImage(spriteSheet , 200, 200, this.width, this.height, this.x, this.y +2, this.width, this.height);
+		}
+		else if (this.d_RIGHT && this.jumping && this.velocity_y > 0) {
 			ctx.drawImage(spriteSheet , 0, 200, this.width, this.height, this.x, this.y +2, this.width, this.height);
 		}
-		else if (this.d_LEFT && this.jumping) {
+		else if (this.d_LEFT && this.jumping && this.velocity_y < 0) {
+			ctx.drawImage(spriteSheet , 0, 300, this.width, this.height, this.x, this.y +2, this.width, this.height);
+		}
+		else if (this.d_LEFT && this.jumping && this.velocity_y > 0) {
 			ctx.drawImage(spriteSheet , 200, 300, this.width, this.height, this.x, this.y +2, this.width, this.height);
 		}
 		else if (this.rightWalking) {
@@ -86,10 +92,6 @@ define("player", ["sprite"], function(Sprite){
 		}
 		if (this.jumping && !this.onLadder && this.velocity_y < 10) {
 			this.velocity_y += 1;
-		}
-		// Borders
-		if (this.y - this.velocity_y < 0) {
-			this.y = 0;
 		}
 		// Orientation
 		if (this.velocity_x > 0) {

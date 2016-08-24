@@ -1,9 +1,18 @@
 define(["sprite", "enemy"], function(Sprite, badGuy){
 
-	function collideCloud(lim) {
-		this.levelLimit = lim;
+	function collideCloud() {
 		this.tangled = [];
-	}
+	};
+	
+    collideCloud.prototype.doKill = function(spriteList, sprite) {
+        if (spriteList.indexOf(sprite) > -1) {
+            spriteList.splice(spriteList.indexOf(sprite), 1);
+        }
+        if (spriteList !== this.tangled && this.tangled.indexOf(sprite) > -1) {
+            this.tangled.splice(this.tangled.indexOf(sprite), 1);
+        }
+		return spriteList;
+    };
 	
     collideCloud.prototype.rectDetect = function (fiends, hero) {
         for (var i = 0; i < fiends.length; i++) {
@@ -39,7 +48,7 @@ define(["sprite", "enemy"], function(Sprite, badGuy){
         }
     };
 	
-    collideCloud.prototype.stateActivate = function(hero, curr) {
+    collideCloud.prototype.stateActivate = function(hero, losers , curr) {
         var ladLen = 0;
         var platLen = 0;
         if (this.tangled.length === 0) {
@@ -106,20 +115,35 @@ define(["sprite", "enemy"], function(Sprite, badGuy){
             }
             if (this.tangled[j].id.slice(0, 4) === "Jerk") {
                 if (hero.y + hero.height > this.tangled[j].y && hero.velocity_y > -1 && hero.jumping) {
+					this.tangled[j].health -= 1;
                     hero.y = this.tangled[j].y - hero.height;
                     hero.onGround = true;
                     hero.onPlatform = true;
                     hero.jumping = false;
                     hero.jump(curr);
+                    if (this.tangled[j].health < 0) {
+                        this.doKill(losers, this.tangled[j]);
+                        return;
+                    }
+					return;
                 }
                 else if (hero.x + hero.width > this.tangled[j].x && hero.x + hero.width < this.tangled[j].x + this.tangled[j].width && hero.y + hero.height > this.tangled[j].y) {
                     hero.x = this.tangled[j].x - hero.width;
-                    hero.onLadder = false;
+					if (hero.onLadder) {
+						hero.onLadder = false;
+						hero.velocity_y = 0;
+						hero.jumping = true;
+					}
                     hero.health -= 1;
+					return;
                 }
                 else if (hero.x > this.tangled[j].x && hero.x < this.tangled[j].x + this.tangled[j].width && hero.y + hero.height > this.tangled[j].y) {
                     hero.x = this.tangled[j].x + this.tangled[j].width;
-                    hero.onLadder = false;
+					if (hero.onLadder) {
+						hero.onLadder = false;
+						hero.velocity_y = 0;
+						hero.jumping = true;
+					}
                     hero.health -= 1;
                 }
             }
@@ -175,15 +199,7 @@ define(["sprite", "enemy"], function(Sprite, badGuy){
                 plats[x].y += changeY;
             }
         }
-    };
-    collideCloud.prototype.doKill = function(spriteList, sprite) {
-        if (spriteList.indexOf(sprite) > -1) {
-            spriteList.splice(spriteList.indexOf(sprite), 1);
-        }
-        if (this.tangled.indexOf(sprite) > -1) {
-            this.tangled.splice(this.tangled.indexOf(sprite), 1);
-        }
-    };
+    }
 	
     collideCloud.prototype.missileControl = function(jerks, missList, curr) {
         for (var h = 0; h < missList.length; h++) {
